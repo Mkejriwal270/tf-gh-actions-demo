@@ -1,0 +1,8 @@
+name: Push Demo
+on: [push]
+jobs:
+  Run-On-Push:
+  runs-on: ubuntu-latest
+  steps:
+    - name: Test command
+      run: echo "github actions demo works"
