@@ -1,8 +1,26 @@
 name: Push Demo
 on: [push]
+
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   Run-On-Push:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: TerraformSession
+
       - name: Test command
         run: echo "github actions demo works"
