@@ -1,0 +1,86 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template for GH Actions'
+Parameters:
+  BucketName:
+    Type: String
+  RoleName:
+    Type: String
+
+Resources:
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BucketName: !Ref BucketName
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+
+  LockTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+      - AttributeName: LockID
+        AttributeType: S
+      KeySchema:
+      - AttributeName: LockID
+        KeyType: HASH
+      SSESpecification:
+        SSEEnabled: true
+      TableName: !Ref BucketName
+
+  GithubOidc:
+    Type: AWS::IAM::OIDCProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ThumbprintList: [6938fd4d98bab03faadb97b34396831e3780aea1]
+      ClientIdList: 
+        - sts.amazonaws.com
+  
+  GitHubActionsRole:
+    Type: AWS:IAM:Role
+    Properties:
+      RoleName: !Ref RoleName
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRoleWithWebIdentity
+            Principal:
+              Federated: !Ref GithubOidc
+            Condition:
+              ForAlValues:StringLike:
+                token.actions.githubusercontent.com:sub: repo:Mkejriwal270/tf-gh-actions-demo:*
+                token.actions.githubusercontent.com:aud: "sts.amazonaws.com"
+      ManagedPolicyArns:
+        - !Ref TerraformPolicy
+
+  TerraformPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      ManagedPolicyName: !Sub "${RoleName}-Policy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action: "*"
+            Resource: "*"
+
+
+
+
+
+
