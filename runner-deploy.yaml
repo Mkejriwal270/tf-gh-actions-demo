@@ -7,3 +7,4 @@ spec:
   template:
     spec:
       repository: Mkejriwal270/tf-gh-actions-demo
+      dockerEnabled: false
