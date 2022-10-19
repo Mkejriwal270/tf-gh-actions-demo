@@ -22,11 +22,24 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE }}
           role-session-name: TerraformSession
 
-      - name: HashiCorp - Setup Terraform
+      - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.2
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.23.6'
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.4.1'
 
       - name: Terraform Init
         run: terraform init -backend-config="bucket=${{ secrets.S3_BUCKET }}" -backend-config="dynamodb_table=${{ secrets.DYNAMODB_TABLE }}"
       
       - name: Terraform Plan
-        run: terraform plan -var='private_subnets=${{ secrets.PRIVATE_SUBNETS }}' -var='public_subnets=${{ secrets.PUBLIC_SUBNETS }}' -var='vpc_id=${{ secrets.VPC_ID }}'  --out tfplan
+        run: terraform plan -var='private_subnets=${{ secrets.PRIVATE_SUBNETS }}' -var='public_subnets=${{ secrets.PUBLIC_SUBNETS }}' -var='vpc_id=${{ secrets.VPC_ID }}' -var='role_arn=${{ secrets.AWS_ROLE }}'  --out tfplan
+      
+      - name: Terraform Plan
+        run: terraform apply -auto-approve tfplan

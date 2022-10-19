@@ -22,3 +22,8 @@ variable "cluster_name" {
   type = string
   default = "actions-runner-demo"
 }
+
+variable "role_arn" {
+  type = string
+  sensitive = true
+}

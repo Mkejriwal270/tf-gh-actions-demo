@@ -26,8 +26,8 @@ module "k8s-cluster" {
     manage_aws_auth                 = true
     map_users                       = [
         {
-            userarn  = "arn:aws:iam::051126537531:user/Milind-Admin"
-            username = "Milind-Admin"
+            rolearn  = "${var.role_arn}"
+            username = "gh-runner-user"
             groups   = ["system:masters"]
         }
     ]

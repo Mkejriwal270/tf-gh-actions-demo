@@ -15,3 +15,8 @@ variable "public_subnets" {
   type = list(string)
   sensitive = true
 }
+
+variable "role_arn" {
+  type = string
+  sensitive = true
+}
