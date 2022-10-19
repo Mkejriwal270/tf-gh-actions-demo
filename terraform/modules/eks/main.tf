@@ -24,7 +24,7 @@ module "k8s-cluster" {
     vpc_id                          = var.vpc_id
     manage_cluster_iam_resources    = true
     manage_aws_auth                 = true
-    map_users                       = [
+    map_roles                       = [
         {
             rolearn  = "${var.role_arn}"
             username = "gh-runner-user"
