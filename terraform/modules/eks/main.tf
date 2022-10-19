@@ -30,7 +30,6 @@ module "k8s-cluster" {
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
   vpc_id                          = var.vpc_id
-  manage_cluster_iam_resources    = true
   manage_aws_auth_configmap       = true
 
   fargate_profiles = {
