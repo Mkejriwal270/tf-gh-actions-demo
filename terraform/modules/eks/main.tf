@@ -9,8 +9,8 @@ data "aws_eks_cluster_auth" "cluster" {
 data "aws_caller_identity" "current" {}
 
 provider "kubernetes" {
-  host                   = data.aws_eks_cluster.cluster
-  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  host                   = data.aws_eks_cluster.cluster.endpoint
+  cluster_ca_certificate = base64decode(module.k8s-cluster.cluster_certificate_authority_data)
 
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
