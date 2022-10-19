@@ -12,11 +12,19 @@ on:
         type: string
 
 jobs:
-  push_tag_to_ecr:
+  Deploy-Apps:
     runs-on: ubuntu-latest
     steps:
     - name: Deploy App
       run: |
         echo "Deploying ${{ inputs.product }} to ${{ inputs.environment }} environment" 
+
+  Test-Apps:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Test Apps
+      run: |
+         echo "Tests successful for ${{ inputs.product }} app"
+   
         
 
