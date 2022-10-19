@@ -36,4 +36,5 @@ module "eks_cluster" {
     private_subnets = var.private_subnets
     public_subnets = var.public_subnets
     cluster_name = var.cluster_name
+    role_arn = var.role_arn
 }
