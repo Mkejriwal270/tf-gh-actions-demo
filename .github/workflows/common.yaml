@@ -20,6 +20,7 @@ jobs:
         echo "Deploying ${{ inputs.product }} to ${{ inputs.environment }} environment" 
 
   Test-Apps:
+    needs: [Deploy-Apps]
     runs-on: ubuntu-latest
     steps:
     - name: Test Apps
