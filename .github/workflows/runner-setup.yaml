@@ -25,11 +25,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2.0.2
 
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
-        with:
-          version: 'v1.23.6'
-
       - name: Setup Helm
         uses: azure/setup-helm@v3
         with:
@@ -41,5 +36,33 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -var='private_subnets=${{ secrets.PRIVATE_SUBNETS }}' -var='public_subnets=${{ secrets.PUBLIC_SUBNETS }}' -var='vpc_id=${{ secrets.VPC_ID }}' -var='role_arn=${{ secrets.AWS_ROLE }}'  --out tfplan
       
-      - name: Terraform Plan
+      - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+
+      - name: Set k8s context
+        run: aws eks --region us-east-1 update-kubeconfig --name actions-runner-demo
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.23.6'
+      
+      - name: CoreDns Patch
+        run: |
+          kubectl patch deployment coredns -n kube-system --type=json -p='[{"op": "remove", "path": "/spec/template/metadata/annotations", "value": "eks.amazonaws.com/compute-type"}]'
+          kubectl rollout restart -n kube-system deployment coredns
+      
+      - name: Cert Manager Install
+        run: |
+          helm repo add jetstack https://charts.jetstack.io
+          helm repo update
+          helm upgrade --install --wait --create-namespace --namespace cert-manager cert-manager jetstack/cert-manager --version v1.10.0 --set installCRDs=true
+
+      - name: Actions Controller Install
+        run: |
+          helm repo add actions-runner-controller https://actions-runner-controller.github.io/actions-runner-controller
+          helm upgrade --install --namespace actions-runner-system --create-namespace\
+            --set=authSecret.create=true\
+            --set=authSecret.github_token="${{ secrets.PAT_TOKEN }}"\
+            --wait actions-runner-controller actions-runner-controller/actions-runner-controller
+          kubectl --namespace actions-runner-system get all

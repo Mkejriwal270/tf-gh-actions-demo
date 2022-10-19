@@ -1,0 +1,31 @@
+name: Deploy App
+on: [push, workflow_dispatch]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Start-Runner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: AppDeploySession
+
+      - name: Set k8s context
+        run: aws eks --region us-east-1 update-kubeconfig --name actions-runner-demo
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.23.6'
+      
+      - name: Start Runner
+        run: kubectl apply -f runner-deploy.yaml

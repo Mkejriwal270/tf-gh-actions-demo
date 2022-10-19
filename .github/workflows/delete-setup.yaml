@@ -1,0 +1,32 @@
+name: Runner Delete Demo
+on: [workflow_dispatch]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  Run-On-Push:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: TerraformSession
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2.0.2
+
+      - name: Terraform Init
+        run: terraform init -backend-config="bucket=${{ secrets.S3_BUCKET }}" -backend-config="dynamodb_table=${{ secrets.DYNAMODB_TABLE }}"
+     
+      - name: Terraform Destroy
+        run: terraform destroy -var='private_subnets=${{ secrets.PRIVATE_SUBNETS }}' -var='public_subnets=${{ secrets.PUBLIC_SUBNETS }}' -var='vpc_id=${{ secrets.VPC_ID }}' -var='role_arn=${{ secrets.AWS_ROLE }}' -auto-approve

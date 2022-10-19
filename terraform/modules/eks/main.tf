@@ -6,6 +6,8 @@ data "aws_eks_cluster_auth" "cluster" {
   name = module.k8s-cluster.cluster_id
 }
 
+data "aws_caller_identity" "current" {}
+
 provider "kubernetes" {
   host                   = data.aws_eks_cluster.cluster.endpoint
   token                  = data.aws_eks_cluster_auth.cluster.token
@@ -31,6 +33,14 @@ module "k8s-cluster" {
             groups   = ["system:masters"]
         }
     ]
+    map_users                       = [
+        {
+            userarn  = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/Milind-Admin"
+            username = "Milind-Admin"
+            groups   = ["system:masters"]
+
+        }   
+    ]
     tags = {
         Environment = "test"
         GithubRepo  = "terraform-aws-eks"
@@ -46,6 +56,18 @@ resource "aws_eks_fargate_profile" "default" {
 
   selector {
     namespace = "default"
+  }
+
+  selector {
+    namespace = "cert-manager"
+  }
+
+  selector {
+    namespace = "self-hosted-runners"
+  }
+
+  selector {
+    namespace = "actions-runner-system"
   }
 }
 
