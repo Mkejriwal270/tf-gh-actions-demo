@@ -6,26 +6,6 @@ permissions:
   contents: read
 
 jobs:
-  Deploy-Dev:
-    uses: ./.github/workflows/common.yaml
-    with:
-      product: "payment"
-      environment: "dev"
-
-
-  Deploy-Test:
-    needs: [Deploy-Dev]
-    uses: ./.github/workflows/common.yaml
-    with:
-      product: "payment"
-      environment: "qa"
-
-  Deploy-Prod:
-    needs: [Deploy-Dev, Deploy-Test]
-    uses: ./.github/workflows/common.yaml
-    with:
-      product: "payment"
-      environment: "production"
 
   Start-Runner:
     runs-on: ubuntu-latest
@@ -50,3 +30,50 @@ jobs:
       
       - name: Start Runner
         run: kubectl apply -f runner-deploy.yaml
+
+  Deploy-Dev:
+    needs: [Start-Runner]
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "dev"
+
+
+  Deploy-Test:
+    needs: [Deploy-Dev]
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "qa"
+
+  Deploy-Prod:
+    needs: [Deploy-Test]
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "production"
+
+  Kill-Runner:
+    runs-on: ubuntu-latest
+    needs: [Deploy-Prod]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE }}
+          role-session-name: AppDeploySession
+
+      - name: Set k8s context
+        run: aws eks --region us-east-1 update-kubeconfig --name actions-runner-demo
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'v1.23.6'
+      
+      - name: Start Runner
+        run: kubectl delete -f runner-deploy.yaml
