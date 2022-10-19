@@ -1,11 +1,32 @@
 name: Deploy App
-on: [workflow_dispatch]
+on: [push]
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  Deploy-Dev:
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "dev"
+
+
+  Deploy-Test:
+    needs: [Deploy-Dev]
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "qa"
+
+  Deploy-Prod:
+    needs: [Deploy-Dev, Deploy-Test]
+    uses: ./.github/workflows/common.yaml
+    with:
+      product: "payment"
+      environment: "production"
+
   Start-Runner:
     runs-on: ubuntu-latest
     steps:
@@ -27,5 +48,5 @@ jobs:
         with:
           version: 'v1.23.6'
       
-      - name: Start Runner
-        run: kubectl apply -f runner-deploy.yaml
+      # - name: Start Runner
+      #   run: kubectl apply -f runner-deploy.yaml

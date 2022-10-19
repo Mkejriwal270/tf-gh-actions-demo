@@ -1,0 +1,22 @@
+name: Common workflow
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to run the task'
+        required: true
+        type: string
+      product:
+        description: 'Name of the product'
+        required: true
+        type: string
+
+jobs:
+  push_tag_to_ecr:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploy App
+      run: |
+        echo "Deploying ${{ github.event.inputs.product }} to ${{ github.event.inputs.environment }} environment" 
+        
+
