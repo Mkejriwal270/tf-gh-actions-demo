@@ -13,7 +13,7 @@ on:
 
 jobs:
   Deploy-Apps:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     steps:
     - name: Deploy App
       run: |
@@ -21,7 +21,7 @@ jobs:
 
   Test-Apps:
     needs: [Deploy-Apps]
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux]
     steps:
     - name: Test Apps
       run: |
