@@ -1,0 +1,13 @@
+name: Create Artifact
+on: [workflow_dispatch]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  CreateArtifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v1.0.4
