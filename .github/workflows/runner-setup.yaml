@@ -1,5 +1,5 @@
-name: Push Demo
-on: [push]
+name: Runner Setup Demo
+on: [push, workflow_dispatch]
 
 permissions:
   id-token: write
@@ -27,6 +27,6 @@ jobs:
 
       - name: Terraform Init
         run: terraform init -backend-config="bucket=${{ secrets.S3_BUCKET }}" -backend-config="dynamodb_table=${{ secrets.DYNAMODB_TABLE }}"
-
-      - name: Test command
-        run: echo "github actions demo works"
+      
+      - name: Terraform Plan
+        run: terraform plan -var='private_subnets=${{ secrets.PRIVATE_SUBNETS }}' -var='public_subnets=${{ secrets.PUBLIC_SUBNETS }}' -var='vpc_id=${{ secrets.VPC_ID }}'  --out tfplan
