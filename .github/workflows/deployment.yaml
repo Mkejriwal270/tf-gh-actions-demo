@@ -48,7 +48,5 @@ jobs:
         with:
           version: 'v1.23.6'
       
-      # - name: Start Runner
-      #   run: kubectl apply -f runner-deploy.yaml
-
-# Demo commit
+      - name: Start Runner
+        run: kubectl apply -f runner-deploy.yaml
